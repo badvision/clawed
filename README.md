@@ -75,40 +75,81 @@ cp .env.example .env
 
 CLAWED requires:
 1. **Issue tracker integration** (GitHub Issues, Jira, etc.)
-2. **Agent definitions** in `.claude/agents/`
-3. **Orchestration command** in `.claude/commands/`
-4. **Quality gate definitions** in `.claude/templates/`
+2. **Agent definitions** in `agents/` directory
+3. **Slash commands** in `commands/` directory
+4. **Claude Code CLI** installed and configured
 
 See [GETTING_STARTED.md](GETTING_STARTED.md) for detailed setup instructions.
 
-### First Orchestration
+### Slash Commands
+
+CLAWED provides four primary slash commands for workflow orchestration:
 
 ```bash
-# Invoke the orchestrator (Claude Code CLI)
+# Start discovery workflow (planning without implementation)
+/discover
+
+# Pick up and implement the next issue
+/work-next
+
+# Or work on specific issue
+/work-next ISSUE-123
+
+# Orchestrate any complex workflow
 /orchestrate
 
-# Or for specific issue
-/orchestrate --issue STORY-1
+# Search existing work before starting (prevents duplication)
+/search-work "authentication"
 ```
 
-The orchestrator will:
-1. Read issue context and requirements
-2. Delegate to specialized agents in sequence
-3. Enforce quality gates at each phase
-4. Coordinate handoffs between agents
-5. Escalate to humans when needed
+The orchestrator coordinates:
+1. Issue context analysis and requirements validation
+2. Delegation to specialized agents in proper sequence
+3. Quality gate enforcement at each phase transition
+4. Handoff coordination between agents
+5. Human escalation when decisions needed
 
 ## Core Concepts
 
+### Workflow Commands
+
+CLAWED provides slash commands that invoke coordinated agent workflows:
+
+- **`/discover`**: Guided discovery for planning and analysis without implementation
+  - Requirements gathering with mandatory architecture assessment
+  - Technical design documentation when needed
+  - Work breakdown into properly-sized stories with acceptance criteria
+  - Issue tracker integration for epic/story creation
+
+- **`/work-next`**: Automated issue selection and implementation workflow
+  - Query issue tracker for highest priority work
+  - Requirements clarity check with escalation if needed
+  - Architecture checkpoint (mandatory 6-question assessment)
+  - Implementation coordination with parallel agent support
+  - QA validation and final workflow completion
+
+- **`/orchestrate`**: General-purpose workflow orchestration
+  - Coordinates any complex multi-phase development work
+  - Enforces quality gates at each phase transition
+  - Manages agent handoffs and dependencies
+  - Handles exception escalation and recovery
+
+- **`/search-work`**: Cross-repository search before starting
+  - Searches issue tracker, documentation, and git history
+  - Prevents duplicate work and reinventing solutions
+  - Discovers prior art and architectural decisions
+  - Mandatory first step for technical-analyst agent
+
 ### Specialized Agents
 
-CLAWED coordinates five specialized agents:
+CLAWED coordinates six specialized agents:
 
-- **Product Owner (Task Planner)**: Breaks down work, validates requirements
-- **Technical Analyst**: Requirements analysis, acceptance criteria definition
-- **Software Architect**: Design decisions, STOP protocol enforcement
-- **TDD Software Engineer**: Implementation with test-first approach
-- **QA Test Validator**: Comprehensive validation and quality verification
+- **Technical Analyst**: Requirements analysis with mandatory /search-work and 6-question architecture assessment
+- **Software Architect**: Design decisions, STOP protocol enforcement, documentation integration
+- **Product Owner (Task Planner)**: Dual-mode operation (discovery vs implementation), work breakdown with complexity-based coordination
+- **TDD Software Engineer**: Test-first implementation, parallel work coordination when deployed as multiple agents
+- **QA Test Validator**: Comprehensive validation, test coverage verification, project health assessment
+- **Product Owner (Validator)**: Final validation, git workflow completion, PR creation, issue status updates
 
 ### Documentation Tiers
 
@@ -138,17 +179,19 @@ The orchestrator actively enforces workflow:
 
 ## Real-World Results
 
-CLAWED evolved from production use on a personal PWA project (bee-organized), handling:
+CLAWED evolved from 3+ months of production use in enterprise environments, handling:
 - 15+ feature implementations through issue-driven workflow
 - Complex multi-phase migrations with artifact tracking
 - E2E test suite optimization and quality improvements
 - Documentation reorganization at scale
+- Parallel agent coordination for complex stories
 
 Key achievements:
 - **Zero documentation bloat** - Systematic tier-2 cleanup eliminated artifacts
 - **Improved test quality** - Focus shifted from "no errors" to "validates requirements"
-- **Pattern reuse** - STOP protocol prevented redundant implementations
+- **Pattern reuse** - STOP protocol and /search-work prevented redundant implementations
 - **Sustained velocity** - Quality gates maintained standards without slowing delivery
+- **Failure mode prevention** - Architecture assessment catches design needs, complexity-based coordination prevents over-decomposition
 
 ## Documentation
 
