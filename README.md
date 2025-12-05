@@ -75,7 +75,7 @@ cp .env.example .env
 
 CLAWED requires:
 1. **Issue tracker integration** (GitHub Issues, Jira, etc.)
-2. **Agent definitions** in `agents/` directory
+2. **Agent definitions** in `agents/` directory (quality gates embedded in each agent)
 3. **Slash commands** in `commands/` directory
 4. **Claude Code CLI** installed and configured
 
