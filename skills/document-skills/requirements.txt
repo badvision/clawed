@@ -1,0 +1,18 @@
+# Python dependencies for document-skills
+# All document formats
+markitdown[pptx]>=0.0.1
+defusedxml>=0.7.1
+
+# PPTX - PowerPoint
+python-pptx>=0.6.21
+
+# XLSX - Excel spreadsheets
+pandas>=2.0.0
+openpyxl>=3.1.0
+
+# PDF
+pypdf>=4.0.0
+pdfplumber>=0.10.0
+reportlab>=4.0.0
+pytesseract>=0.3.10
+pdf2image>=1.16.0

@@ -1,0 +1,165 @@
+#!/usr/bin/env python3
+"""
+Pre-commit hook to validate YAML frontmatter in agent markdown files.
+Prevents commits with invalid YAML that would cause agent loading failures.
+"""
+
+import sys
+import re
+from pathlib import Path
+
+def extract_frontmatter(content):
+    """Extract YAML frontmatter from markdown content."""
+    # Match content between --- delimiters at start of file
+    match = re.match(r'^---\s*\n(.*?)\n---\s*\n', content, re.DOTALL)
+    if not match:
+        return None
+    return match.group(1)
+
+def validate_frontmatter_basic(frontmatter, filepath):
+    """
+    Perform basic YAML frontmatter validation without external dependencies.
+    Catches common issues that cause agent loading failures.
+    """
+    errors = []
+
+    # Parse frontmatter line by line
+    fields = {}
+    current_field = None
+    current_value = []
+
+    for line_num, line in enumerate(frontmatter.split('\n'), 1):
+        stripped = line.strip()
+
+        # Skip empty lines and comments
+        if not stripped or stripped.startswith('#'):
+            continue
+
+        # Check for field: value pattern
+        if ':' in line and not line.startswith(' '):
+            if current_field:
+                fields[current_field] = ' '.join(current_value)
+
+            parts = line.split(':', 1)
+            current_field = parts[0].strip()
+            value = parts[1].strip() if len(parts) > 1 else ''
+            current_value = [value] if value else []
+
+            # Check for unquoted values with colons (common YAML error)
+            if value and not (value.startswith('"') or value.startswith("'")) and ':' in value:
+                # Check if this looks problematic
+                if not value.startswith('[') and not value.startswith('{'):
+                    errors.append(
+                        f"Line {line_num}: Field '{current_field}' has unquoted value containing colon.\n"
+                        f"         Value: {value[:80]}{'...' if len(value) > 80 else ''}\n"
+                        f"         💡 Wrap the entire value in double quotes: {current_field}: \"{value}\""
+                    )
+
+    # Don't forget the last field
+    if current_field:
+        fields[current_field] = ' '.join(current_value)
+
+    # Validate required fields
+    required_fields = ['name', 'description']
+    for field in required_fields:
+        if field not in fields:
+            errors.append(f"Missing required field: '{field}'")
+        elif not fields[field].strip().strip('"').strip("'"):
+            errors.append(f"Field '{field}' is empty")
+
+    # Validate name format
+    if 'name' in fields:
+        name_value = fields['name'].strip().strip('"').strip("'")
+        if not re.match(r'^[a-z][a-z0-9-]*$', name_value):
+            errors.append(
+                f"Field 'name' must use lowercase letters and hyphens only.\n"
+                f"         Got: {name_value}\n"
+                f"         💡 Example: my-agent-name"
+            )
+
+    return errors
+
+def validate_agent_file(filepath):
+    """Validate YAML frontmatter in an agent markdown file."""
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        frontmatter = extract_frontmatter(content)
+        if frontmatter is None:
+            return False, ["No YAML frontmatter found (missing --- delimiters)"]
+
+        errors = validate_frontmatter_basic(frontmatter, filepath)
+
+        if errors:
+            return False, errors
+
+        return True, []
+
+    except Exception as e:
+        return False, [f"Unexpected error: {e}"]
+
+def main():
+    """Main pre-commit hook logic."""
+    # Get list of staged files
+    import subprocess
+    result = subprocess.run(
+        ['git', 'diff', '--cached', '--name-only', '--diff-filter=ACM'],
+        capture_output=True,
+        text=True
+    )
+
+    if result.returncode != 0:
+        print("❌ Error: Could not get list of staged files")
+        return 1
+
+    staged_files = result.stdout.strip().split('\n')
+    if not staged_files or staged_files == ['']:
+        return 0  # No files staged
+
+    # Filter for agent markdown files
+    repo_root = Path(__file__).parent.parent.parent
+    agent_files = [
+        f for f in staged_files
+        if f.startswith('agents/') and f.endswith('.md') and 'README' not in f
+    ]
+
+    if not agent_files:
+        return 0  # No agent files in this commit
+
+    print("🔍 Validating YAML frontmatter in agent files...")
+
+    all_errors = []
+    for filepath in agent_files:
+        full_path = repo_root / filepath
+        if not full_path.exists():
+            continue  # File might be deleted
+
+        valid, errors = validate_agent_file(full_path)
+        if not valid:
+            all_errors.append((filepath, errors))
+        else:
+            print(f"  ✓ {filepath}")
+
+    if all_errors:
+        print("\n❌ YAML Validation Failed!\n")
+        for filepath, errors in all_errors:
+            print(f"  {filepath}:")
+            for error in errors:
+                for line in error.split('\n'):
+                    print(f"    {line}")
+            print()
+
+        print("💡 Common fixes:")
+        print("  - Wrap descriptions with colons in double quotes")
+        print("  - Escape single quotes or wrap entire value in double quotes")
+        print("  - Ensure 'name' uses lowercase letters and hyphens only")
+        print("  - Check that --- delimiters are on their own lines")
+        print("\nCommit aborted. Please fix the errors and try again.")
+        return 1
+
+    print("✅ All agent files have valid YAML frontmatter\n")
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main())

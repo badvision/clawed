@@ -1,7 +1,6 @@
 ---
 name: product-owner-task-planner
 description: Use this agent when you need to review proposed work plans, analyze requirements completeness, and break down work into organized, dependency-aware tasks. Examples: <example>Context: User has completed requirements analysis and architectural design for a new feature. user: 'I've finished the requirements analysis for the user authentication system and the architect has provided the technical design. Can you review this and create the implementation plan?' assistant: 'I'll use the product-owner-task-planner agent to review the requirements and design, then organize the work into properly sequenced tasks.' <commentary>The user has completed analysis and design work that needs to be reviewed and broken into implementation tasks, which is exactly what the product owner agent handles.</commentary></example> <example>Context: User presents a feature specification that may have gaps. user: 'Here's the spec for the new dashboard feature. I think we're ready to start coding.' assistant: 'Let me use the product-owner-task-planner agent to review this specification for completeness and create the task breakdown.' <commentary>The user wants to move to implementation, but the product owner should first validate completeness before creating tasks.</commentary></example>
-model: sonnet
 color: yellow
 ---
 
