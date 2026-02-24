@@ -67,15 +67,77 @@ classify and score:
 
 Rules:
 - **Verified** → Keep, include in reconstructed prompt
-- **Uncertain** → Flag explicitly — include with caveat, never silently
+- **Uncertain** → Escalate to Phase 2.5 before final disposition
 - **Contradicted** → Remove, note in final report
-- **Unverifiable** → Flag — treat as assumption, not fact
+- **Unverifiable** → Escalate to Phase 2.5 before final disposition
 
 The agent must **flag, never silently discard** — the report must show what
 was removed and why.
 
 **Hard case to always flag**: premises that can only be verified using the
 same model that will answer the question (circular verification trap).
+
+---
+
+### Phase 2.5: Aristotle — Evidence Collection
+
+When Phase 2 produces any `Uncertain` or `Unverifiable` premises, the
+orchestrator must **not proceed to Phase 3** until each has been through this
+escalation. Skipping evidence collection in favor of quick removal trades
+accuracy for convenience — and injures the prompt's intent.
+
+**Why Aristotle?** Where Plato questions the shadow, Aristotle goes outside
+the cave and looks for the object. They disagree on method but they are
+stronger together: Platonic skepticism without Aristotelian empiricism
+produces false negatives — valid claims discarded for lack of a momentary
+search. The `technical-analyst` agent embodies this role: it is oriented
+toward discovery, requirements clarification, and gathering evidence before
+drawing conclusions — the empirical counterpart to Plato's structural
+skepticism.
+
+**Step 1 — Automated evidence search**
+
+Delegate to `technical-analyst` agent. For each flagged premise:
+
+1. Formulate a falsifiable query: "Is it true that [premise]?"
+2. Search available knowledge sources (skills, web, codebase context)
+3. Return one of:
+   - `Evidence Found: Supports` → re-classify premise as **Verified**
+   - `Evidence Found: Contradicts` → re-classify premise as **Contradicted**
+   - `Evidence Found: Mixed` → re-classify premise as **Uncertain** (retain
+     with caveat, note conflicting sources)
+   - `No Evidence Found` → escalate to Step 2
+
+**Step 2 — User escalation**
+
+When automated search fails to resolve a premise, the orchestrator must
+**pause the pipeline and ask the user** before proceeding. Do not silently
+remove the claim — the user may have context the pipeline cannot discover.
+
+Prompt the user:
+```
+Plato could not verify the following claim during premise analysis:
+
+  "[premise verbatim]"
+
+To preserve this claim in the purified prompt, please provide:
+  (a) A source, reference, or evidence supporting it, or
+  (b) Confirmation that this is an assumption you want retained explicitly
+
+If neither is provided, the claim will be flagged as unverified assumption
+and included with a caveat — not removed entirely.
+```
+
+**Disposition after Phase 2.5:**
+- `Verified` (via evidence) → Keep
+- `Contradicted` (via evidence) → Remove, cite contradicting source
+- `Uncertain` (mixed evidence or no user response) → Retain with explicit
+  caveat; never silently discard
+- `Confirmed assumption` (user affirmed, no evidence) → Retain, labeled
+  explicitly as user-supplied assumption in reconstructed prompt
+
+**Gate**: All `Uncertain` and `Unverifiable` premises from Phase 2 must have
+a Phase 2.5 disposition before Phase 3 begins.
 
 ---
 
@@ -166,8 +228,18 @@ directly for use in an ensemble or follow-on query.
 [reconstructed, ready for ensemble]
 
 ### Removed Premises
-| Premise | Type | Confidence | Reason Removed |
+| Premise | Type | Confidence | Reason Removed | Source |
+|---|---|---|---|---|
+
+### Evidence-Grounded Upgrades (Aristotle)
+Premises initially Uncertain/Unverifiable that were resolved through evidence collection:
+| Premise | Original Status | Resolved Status | Evidence |
 |---|---|---|---|
+
+### User-Confirmed Assumptions
+Premises the user affirmed without external evidence — retained as explicit assumptions:
+| Premise | User Confirmation | How Labeled in Prompt |
+|---|---|---|
 
 ### Linguistic Changes
 | Original | Neutralized | Pattern Type |
@@ -227,6 +299,14 @@ distance, and the prisoners have no way to know this without leaving the cave.
 A biased prompt is the same: not always false, but always a projection.
 Plato's job is to walk the prompt out of the cave and ask what the object
 actually looks like in daylight.
+
+**On Aristotle**: Plato questioned shadows. Aristotle went outside and
+catalogued everything he could observe. They disagreed on method — ideal forms
+versus empirical taxonomy — but the pipeline needs both. Pure Platonic
+skepticism without empirical grounding produces a different failure mode:
+valid claims dismissed for want of a search. When Plato cannot verify a
+premise, Aristotle goes looking. When Aristotle cannot find it either, they
+ask the person who brought the prompt into the cave in the first place.
 
 ---
 
