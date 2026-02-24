@@ -55,7 +55,7 @@
 
 **Path Structure:**
 ```
-/tmp/claude/research-{IDENTIFIER}/iteration-{N}/
+/tmp/claude/{IDENTIFIER}/iteration-{N}/
 
 Where:
 - IDENTIFIER = Issue tracker key (STORY-1) OR adhoc name (error-handling, auth-spike)

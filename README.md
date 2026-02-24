@@ -60,30 +60,25 @@ Production deployment shows Claude can:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/clawed.git
+git clone https://github.com/badvision/clawed.git
 cd clawed
 
-# Install dependencies
-npm install
-
-# Configure for your environment
-cp .env.example .env
-# Edit .env with your settings
+# Run the setup script to symlink agents, commands, and skills into ~/.claude
+./setup.sh
 ```
 
 ### Minimal Configuration
 
 CLAWED requires:
-1. **Issue tracker integration** (GitHub Issues, Jira, etc.)
-2. **Agent definitions** in `agents/` directory (quality gates embedded in each agent)
-3. **Slash commands** in `commands/` directory
-4. **Claude Code CLI** installed and configured
+1. **Claude Code CLI** installed and configured
+2. **Issue tracker integration** (GitHub Issues, Jira, etc.) — optional, degrades gracefully
+3. API keys for any LLM Council researcher agents you want to use (see `skills/research/SETUP.md`)
 
 See [GETTING_STARTED.md](GETTING_STARTED.md) for detailed setup instructions.
 
 ### Slash Commands
 
-CLAWED provides four primary slash commands for workflow orchestration:
+CLAWED provides five primary slash commands for workflow orchestration:
 
 ```bash
 # Start discovery workflow (planning without implementation)
@@ -100,6 +95,9 @@ CLAWED provides four primary slash commands for workflow orchestration:
 
 # Search existing work before starting (prevents duplication)
 /search-work "authentication"
+
+# Purify a prompt before sending it to an ensemble (removes false premises and framing bias)
+/plato "Why is microservices always better than monoliths?"
 ```
 
 The orchestrator coordinates:
@@ -140,16 +138,42 @@ CLAWED provides slash commands that invoke coordinated agent workflows:
   - Discovers prior art and architectural decisions
   - Mandatory first step for technical-analyst agent
 
+- **`/plato`**: Socratic prompt purification pipeline
+  - Surfaces and removes false premises, leading framing, and presupposition traps
+  - Reconstructs a clean, epistemically neutral version of the prompt
+  - Computes framing sensitivity score and flags residual risks
+  - Ideal for preparing prompts before ensemble or research workflows
+
 ### Specialized Agents
 
-CLAWED coordinates six specialized agents:
+CLAWED coordinates specialized agents across two categories:
 
+**Core Development Workflow (6 agents):**
 - **Technical Analyst**: Requirements analysis with mandatory /search-work and 6-question architecture assessment
 - **Software Architect**: Design decisions, STOP protocol enforcement, documentation integration
 - **Product Owner (Task Planner)**: Dual-mode operation (discovery vs implementation), work breakdown with complexity-based coordination
 - **TDD Software Engineer**: Test-first implementation, parallel work coordination when deployed as multiple agents
 - **QA Test Validator**: Comprehensive validation, test coverage verification, project health assessment
 - **Product Owner (Validator)**: Final validation, git workflow completion, PR creation, issue status updates
+
+**LLM Council Research Team (6 agents):**
+- **Research Lead**: Orchestrates multi-model research — decomposes queries, selects appropriate researcher agents, synthesizes findings
+- **Claude Researcher**: Answers queries using Claude's own reasoning; strong at nuanced synthesis
+- **OpenAI Researcher**: Queries OpenAI with chain-of-thought scaffolding and structured output
+- **Gemini Researcher**: Queries Gemini via Vertex AI; strong at multimodal reasoning and long-context analysis
+- **Perplexity Researcher**: Citation-backed, web-grounded research with source attribution
+- **Peer Reviewer**: Evaluates anonymized model responses for accuracy, depth, and usefulness; avoids self-review bias
+
+**Support Agent:**
+- **Self-Review Checklist**: Quality checklist for agent self-assessment before completion
+
+### Skills
+
+CLAWED includes reusable skill packs that extend agent capabilities:
+
+- **`socratize`** / **`brainstorm`**: Multi-perspective Socratic deliberation — coordinates personality-diverse agents to debate and resolve complex decisions
+- **`concilize`**: Hybrid analysis combining Socratic deliberation with LLM Council multi-model grounding
+- **`research`**: Full LLM Council pipeline — parallel queries to Claude, OpenAI, Gemini, and Perplexity with peer review synthesis
 
 ### Documentation Tiers
 
