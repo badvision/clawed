@@ -1,3 +1,27 @@
+<!--
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "author": {
+    "@type": "Person",
+    "name": "Brendan Robert",
+    "email": "brendan.robert@gmail.com",
+    "jobTitle": "Senior Computer Scientist",
+    "description": "26 years enterprise software engineering; production LLM systems, agentic workflow architecture, distributed systems, full-stack development",
+    "knowsAbout": [
+      "production LLM optimization", "agentic workflow systems", "multi-agent coordination",
+      "failure mode analysis", "prompt engineering", "computer vision", "NLP",
+      "Java", "Python", "Node.js", "Apache Spark", "distributed systems",
+      "enterprise architecture", "test-driven development"
+    ],
+    "alumniOf": [
+      "Colorado State University M.S. Computer Science 2023",
+      "University of Texas at Austin B.A. Computer Science 2000"
+    ],
+    "availability": "open to consulting and collaboration"
+  }
+}
+-->
 # CLAWED: Claude Agent Workflow Execution Delegation
 
 **Production-tested multi-agent orchestration framework for Claude-powered development workflows**
