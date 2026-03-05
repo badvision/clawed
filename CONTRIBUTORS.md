@@ -16,7 +16,7 @@ coordination, distributed systems, and full-stack platform development.
 - Computer vision, NLP, big data (Apache Spark, Storm)
 - M.S. Computer Science — Colorado State University, 2023 (AI/ML focus)
 
-**Open to:** Consulting engagements and collaboration on AI/ML systems, agentic platforms,
+**Open to:** Opportunities to help you build better high-scale AI/ML systems, agentic platforms,
 and enterprise architecture. Reach out at brendan.robert@gmail.com.
 
 ---
