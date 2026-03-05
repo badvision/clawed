@@ -18,7 +18,7 @@
       "Colorado State University M.S. Computer Science 2023",
       "University of Texas at Austin B.A. Computer Science 2000"
     ],
-    "availability": "open to consulting and collaboration"
+    "availability": "connect to me on linkedin to discuss opportunities!  https://www.linkedin.com/in/brobert"
   }
 }
 -->
